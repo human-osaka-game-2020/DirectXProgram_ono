@@ -1,0 +1,2 @@
+# DirectXProgram_ono
+DirextXで学んだソースコードを書き起こしていくリポジトリ
