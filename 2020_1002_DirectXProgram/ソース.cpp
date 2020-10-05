@@ -1,27 +1,61 @@
 #include<Windows.h>
 
 // ウィンドウプロシージャー作成
+/*
+	戻り値：
+		実行結果
+
+	引数：
+		HWND
+			メッセージの対象となっているウィンドウのハンドル
+
+			HWND
+				ウィンドウのハンドルを保存する型
+
+		UNIT
+			メッセージ情報
+				クリックされた等の情報が保存されている
+
+		WPARAM
+			メッセージ付加情報その１
+
+		LPARAM
+			メッセージ付加情報その２
+
+		・付加情報にはメッセージ情報の補足が保存されている
+			例：キーの詳細情報(大文字、小文字など)
+*/
 LRESULT CALLBACK WindowsProcedure(
 	HWND   window_handle,
 	UINT   message_id,
 	WPARAM wparam,
 	LPARAM lparam)
 {
-	switch (message_id)
-	{
-		// ウィンドウを閉じるアイコンがクリックされた
-	case WM_CLOSE:
-		PostQuitMessage(0);
-		break;
-		// メッセージを何も対応しないときに実行する関数
-	default:
-		return DefWindowProc(window_handle, message_id, wparam, lparam);
-		break;
-	}
-	// メッセージの対応をしたので0を返す
-	return 0;
+	// メッセージを何も対応しないときに実行する関数
+	//　引数にはウィンドウプロシージャーで渡されている引数をそのまま返す
+	return DefWindowProc(window_handle, message_id, wparam, lparam);
 }
 
+/*
+	WinMain
+		Windowsアプリにおいてのエントリポイント
+		戻り値：
+			アプリの結果
+		引数：
+			HINSTANCE hInstance :: 重要
+				アプリのインスタンスハンドル
+				H => Handleの略
+
+		HINSTANCE hPrevInstance :: 以下あまり必要なし
+			古い仕様の残りなので使わない
+			情報としての価値はない
+
+		LPSTR IpCmdLine,
+			コマンドラインのパラメーターリスト
+
+		INT nCmdShow
+			コマンドラインの引数の数
+*/
 int APIENTRY WinMain(
 	HINSTANCE hInstance,
 	HINSTANCE hPrevInstance,
@@ -32,10 +66,8 @@ int APIENTRY WinMain(
 	int height = 400;
 
 	// 構造体の登録
-	HWND hWnd;
-	WNDCLASSEX window_class =
+	WNDCLASSA window_class =
 	{
-		sizeof(WNDCLASSEX),            // 構造体のサイズ
 		CS_HREDRAW | CS_VREDRAW,       // クラスのスタイル(CS_HREDRAW と CS_VREDRAWは横と縦の変更許可設定)
 		WindowsProcedure,              // ウィンドウプロシージャ
 		0,                             // 補助メモリ
@@ -45,8 +77,7 @@ int APIENTRY WinMain(
 		LoadCursor(NULL,IDC_ARROW),    // カーソル画像
 		NULL,                          // 背景色
 		NULL,                          // メニュー名
-		TEXT("CreateWindow"),          // クラス名
-		NULL						   // 小さいアイコン
+		"CreateWindow",                // クラス名
 	};
 
 	// 初期化したウィンドウ情報を登録する
@@ -58,17 +89,17 @@ int APIENTRY WinMain(
 		    非０ => 登録成功
 			０   => 登録失敗
 	*/
-	if (RegisterClassEx(&window_class) == 0)
+	if (RegisterClassA(&window_class) == 0)
 	{
 		return 0;
 	}
 
 	// ウィンドウ作成
-	hWnd = CreateWindow(
+	HWND window_handle = CreateWindowA(
 		// 登録しているウィンドウクラス構造体の名前
-		TEXT("CreateWindow"),
+		"CreateWindow",
 		// ウィンドウ名
-		TEXT("ウィンドウ生成サンプル"),
+		"ウィンドウ生成サンプル",
 		// ウインドウスタイル
 		(WS_OVERLAPPEDWINDOW ^ WS_THICKFRAME),
 		// 表示位置
@@ -86,17 +117,50 @@ int APIENTRY WinMain(
 		// WM_CREATEメッセージでlparamに渡したい値
 		NULL);
 
-	ShowWindow(hWnd, SW_SHOW);
+	// ウィンドウ表示
+	ShowWindow(window_handle, SW_SHOW);
 
-	if (hWnd == NULL)
+	if (window_handle == NULL)
 	{
 		return 0;
 	}
 
 	while (true)
 	{
-		MSG message;
+		// フレーム管理
+		/*
+			フレーム管理はループが一定の周期になるように管理する
+			601FPSでゲームが進行するなら
+			１回のループは約0.016秒で実行する
 
+			※DirectXが60FPSでフレーム管理を自動で行うように
+			今回はDirectXに任せる
+		*/
+
+		// メッセージ対応
+		/*
+			Windows(OS)から送られてくるメッセージの
+			対応を行う必要がある
+
+			メッセージの例
+				ウィンドウをクリックした
+				ウィンドウを移動させた
+				ウィンドウを再描画した
+		
+		*/
+		MSG message;
+		/*
+			Getmessage
+				Windowsからメッセージが通知されるまで
+				次の処理に移行しない
+
+				scanfに近い
+		*/
+		/*
+		if(GetMessage(&message,nullptr,0,100))
+		{
+		}
+		*/
 		/*
 		    PeekMassage有無に関わらず次の処理を実行する
 
@@ -126,6 +190,7 @@ int APIENTRY WinMain(
 		else
 		{
 			// ゲームに関連する処理
+				// ゲーム処理と画面処理を実行する
 		}
 	}
 
