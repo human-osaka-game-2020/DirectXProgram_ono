@@ -1,4 +1,9 @@
 #include<Windows.h>
+#include"DirectGraphics.h"
+
+// prama commentによるlibファイルの追加
+#pragma comment(lib,"d3d9.lib")
+#pragma comment(lib,"d3dx9.lib")
 
 // ウィンドウプロシージャー作成
 /*
@@ -31,9 +36,19 @@ LRESULT CALLBACK WindowsProcedure(
 	WPARAM wparam,
 	LPARAM lparam)
 {
+	switch (message_id)
+	{
+	case WM_CLOSE:
+		PostQuitMessage(0);
+		break;
 	// メッセージを何も対応しないときに実行する関数
 	//　引数にはウィンドウプロシージャーで渡されている引数をそのまま返す
-	return DefWindowProc(window_handle, message_id, wparam, lparam);
+	default:
+		return DefWindowProc(window_handle, message_id, wparam, lparam);
+		break;
+	}
+	// メッセージの対応をした
+	return 0;
 }
 
 /*
@@ -65,8 +80,9 @@ int APIENTRY WinMain(
 	int width  = 400;
 	int height = 400;
 
+	// ウィンドウの生成はメインループが始まる前に行う
 	// 構造体の登録
-	WNDCLASSA window_class =
+	WNDCLASS window_class =
 	{
 		CS_HREDRAW | CS_VREDRAW,       // クラスのスタイル(CS_HREDRAW と CS_VREDRAWは横と縦の変更許可設定)
 		WindowsProcedure,              // ウィンドウプロシージャ
@@ -77,7 +93,7 @@ int APIENTRY WinMain(
 		LoadCursor(NULL,IDC_ARROW),    // カーソル画像
 		NULL,                          // 背景色
 		NULL,                          // メニュー名
-		"CreateWindow",                // クラス名
+		TEXT("CreateWindow"),                // クラス名
 	};
 
 	// 初期化したウィンドウ情報を登録する
@@ -89,20 +105,24 @@ int APIENTRY WinMain(
 		    非０ => 登録成功
 			０   => 登録失敗
 	*/
-	if (RegisterClassA(&window_class) == 0)
+	if (RegisterClass(&window_class) == 0)
 	{
 		return 0;
 	}
 
 	// ウィンドウ作成
-	HWND window_handle = CreateWindowA(
+	HWND window_handle = CreateWindow(
 		// 登録しているウィンドウクラス構造体の名前
-		"CreateWindow",
+		TEXT("CreateWindow"),
 		// ウィンドウ名
-		"ウィンドウ生成サンプル",
+		TEXT("提出する用"),
 		// ウインドウスタイル
 		(WS_OVERLAPPEDWINDOW ^ WS_THICKFRAME),
 		// 表示位置
+		/*
+			ウィンドウを表示する位置を指定する
+			(CW_USEDEFAULT => OS任せ)
+		*/
 		CW_USEDEFAULT,
 		CW_USEDEFAULT,
 		// サイズ
@@ -117,10 +137,48 @@ int APIENTRY WinMain(
 		// WM_CREATEメッセージでlparamに渡したい値
 		NULL);
 
+	
+
+	if (window_handle == NULL)
+	{
+		return 0;
+	}
+
+	// リサイズ
+	RECT window_rect;
+	RECT client_rect;
+
+	// ウィンドウサイズ取得
+	GetWindowRect(window_handle, &window_rect);
+	
+	// クライアント領域のサイズ取得
+	GetClientRect(window_handle, &client_rect);
+
+	// フレームサイズ算出
+	int frame_size_x = (window_rect.right - window_rect.left) - (client_rect.right - client_rect.left);
+	int frame_size_y = (window_rect.bottom - window_rect.top) - (client_rect.bottom);
+
+	// リサイズ用サイズの算出
+	int resize_width   = frame_size_x + width;
+	int resize_height  = frame_size_y + height;
+
+	// 表示位置の更新
+	SetWindowPos(
+		window_handle,
+		NULL,
+		CW_USEDEFAULT,
+		CW_USEDEFAULT,
+		// リサイズの横幅
+		resize_width,
+		// リサイズの縦幅
+		resize_height,
+		// オプションの指定
+		SWP_NOMOVE);
+
 	// ウィンドウ表示
 	ShowWindow(window_handle, SW_SHOW);
 
-	if (window_handle == NULL)
+	if (InitDirectGraphics(window_handle) == false)
 	{
 		return 0;
 	}
@@ -181,11 +239,19 @@ int APIENTRY WinMain(
 
 		if (PeekMessage(&message, nullptr, 0, 0, PM_REMOVE))
 		{
-			// 受信したデータを翻訳する
-			TranslateMessage(&message);
+			if (message.message == WM_QUIT)
+			{
+				break;
+			}
+			else
+			{
+				// 受信したデータを翻訳する
+				TranslateMessage(&message);
 
-			// ウィンドウズプロシージャー
-			DispatchMessage(&message);
+				// ウィンドウズプロシージャー
+				DispatchMessage(&message);
+			};
+			
 		}
 		else
 		{
@@ -193,6 +259,9 @@ int APIENTRY WinMain(
 				// ゲーム処理と画面処理を実行する
 		}
 	}
+
+	// 解放
+	ReleaseDirectGraphics();
 
 	return 0;
 }
