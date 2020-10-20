@@ -257,6 +257,18 @@ int APIENTRY WinMain(
 		{
 			// ゲームに関連する処理
 				// ゲーム処理と画面処理を実行する
+
+			StartDrawing();
+
+//			DrawPorigon();
+
+			DrawPorigonWithTriangleLise();
+
+			DrawPorigonWithTriangleStrip();
+
+			DrawPorigonWithTriangleFan();
+
+			FinishDrawing();
 		}
 	}
 

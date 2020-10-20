@@ -5,6 +5,15 @@
 #include <d3d9.h>
 #include <d3dx9.h>
 
+struct CustomVertex
+{
+	float x;
+	float y;
+	float z;
+	float Rhw;
+	DWORD Color;
+};
+
 /*
 	@brief     DirectGraphics‰Šú‰»ŠÖ”
 	@details   •`‰æ‚ğg—p‚·‚é‚½‚ß‚Ì‰Šú‰»‚ğs‚¤
@@ -16,6 +25,18 @@
 bool InitDirectGraphics(HWND window_handle);
 
 void ReleaseDirectGraphics();
+
+void StartDrawing();
+
+void FinishDrawing();
+
+void DrawPorigon();
+
+void DrawPorigonWithTriangleLise();
+
+void DrawPorigonWithTriangleStrip();
+
+void DrawPorigonWithTriangleFan();
 
 
 #endif

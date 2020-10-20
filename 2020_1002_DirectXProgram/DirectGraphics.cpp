@@ -105,3 +105,116 @@ void ReleaseDirectGraphics()
 		g_Interface = nullptr;
 	}
 }
+
+void StartDrawing()
+{
+	g_Device->Clear(
+		0,							  // 0固定
+		nullptr,					  // nullptr固定
+		D3DCLEAR_TARGET,			  // D3DCLEAR_TARGET固定
+		D3DCOLOR_XRGB(255, 255, 200), // 塗りつぶす色
+		1.0f,						  // 1.0f1固定
+		0							  // 0固定
+	);
+
+	// DirectXで描画を開始する
+	g_Device->BeginScene();
+}
+
+void FinishDrawing()
+{
+	// DirectXで描画を開始する
+	g_Device->BeginScene();
+
+	// バックバッファをフロントバッファに転送する
+	g_Device->Present(nullptr, nullptr, nullptr, nullptr);
+}
+
+void DrawPorigon()
+{
+	CustomVertex vertices[] =
+	{
+		{300.0f,100.0f,0.0f,0xffffff},
+		{500.0f,300.0f,0.0f,0xffffff},
+		{50.0f ,300.0f,0.0f,0xffffff},
+	};
+
+	// DirectXに頂点構造を教える必要がある
+	g_Device->SetFVF(D3DFVF_XYZRHW | D3DFVF_DIFFUSE);
+
+	g_Device->DrawPrimitiveUP(
+		D3DPT_TRIANGLELIST,		// ポリゴンの作り方
+		1,						// ポリゴンの数
+		vertices,				// 頂点リスト
+		sizeof(CustomVertex)	// 1頂点のサイズ
+	);
+}
+
+void DrawPorigonWithTriangleLise()
+{
+	CustomVertex vertices[] =
+	{
+		// 1つ目
+		{0.0f  ,0.0f  ,0.0f,0xffffff},
+		{100.0f,100.0f,0.0f,0xffffff},
+		{0.0f  ,100.0f,0.0f,0xffffff},
+		// 2つ目
+		{100.0f,0.0f  ,0.0f,0xffffff},
+		{100.0f,100.0f,0.0f,0xffffff},
+		{0.0f  ,0.0f  ,0.0f,0xffffff},
+	};
+	// DirextXに頂点構造を教える必要がある
+	g_Device->SetFVF(D3DFVF_XYZRHW | D3DFVF_DIFFUSE);
+
+
+	g_Device->DrawPrimitiveUP(
+		D3DPT_TRIANGLELIST,		// ポリゴンの作り方
+		2,						// ポリゴンの数
+		vertices,				// 頂点リスト
+		sizeof(CustomVertex)	// １頂点のサイズ
+	);
+}
+
+void DrawPorigonWithTriangleStrip()
+{
+	CustomVertex vertices[] =
+	{
+		{300.0f,100.0f,0.0f,0xffffff},
+		{300.0f,0.0f  ,0.0f,0xffffff},
+		{400.0f,100.0f,0.0f,0xffffff},
+		{400.0f,0.0f  ,0.0f,0xffffff},
+		{500.0f,100.0f,0.0f,0xffffff},
+		{500.0f,0.0f  ,0.0f,0xffffff},
+	};
+	// DirextXに頂点構造を教える必要がある
+	g_Device->SetFVF(D3DFVF_XYZRHW | D3DFVF_DIFFUSE);
+
+
+	g_Device->DrawPrimitiveUP(
+		D3DPT_TRIANGLESTRIP,	// ポリゴンの作り方
+		4,						// ポリゴンの数
+		vertices,				// 頂点リスト
+		sizeof(CustomVertex)	// １頂点のサイズ
+	);
+}
+
+void DrawPorigonWithTriangleFan()
+{
+	CustomVertex vertices[] =
+	{
+		{200.0f,200.0f,0.0f,0xffffff},
+		{300.0f,200.0f,0.0f,0xffffff},
+		{300.0f,300.0f,0.0f,0xffffff},
+		{200.0f,300.0f,0.0f,0xffffff},
+	};
+	// DirextXに頂点構造を教える必要がある
+	g_Device->SetFVF(D3DFVF_XYZRHW | D3DFVF_DIFFUSE);
+
+
+	g_Device->DrawPrimitiveUP(
+		D3DPT_TRIANGLEFAN,		// ポリゴンの作り方
+		2,						// ポリゴンの数
+		vertices,				// 頂点リスト
+		sizeof(CustomVertex)	// １頂点のサイズ
+	);
+}
