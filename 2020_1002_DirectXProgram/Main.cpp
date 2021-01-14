@@ -1,9 +1,12 @@
 #include<Windows.h>
 #include"DirectGraphics.h"
+#include "DirectInput.h"
 
 // prama commentによるlibファイルの追加
 #pragma comment(lib,"d3d9.lib")
 #pragma comment(lib,"d3dx9.lib")
+#pragma comment(lib,"dinput8.lib")
+#pragma comment(lib,"dxguid.lib")
 
 // ウィンドウプロシージャー作成
 /*
@@ -41,9 +44,9 @@ LRESULT CALLBACK WindowsProcedure(
 	case WM_CLOSE:
 		PostQuitMessage(0);
 		break;
-	// メッセージを何も対応しないときに実行する関数
-	//　引数にはウィンドウプロシージャーで渡されている引数をそのまま返す
 	default:
+		// メッセージを何も対応しないときに実行する関数
+		//　引数にはウィンドウプロシージャーで渡されている引数をそのまま返す
 		return DefWindowProc(window_handle, message_id, wparam, lparam);
 		break;
 	}
@@ -89,10 +92,11 @@ int APIENTRY WinMain(
 		0,                             // 補助メモリ
 		0,                             // 補助メモリ
 		hInstance,                     // このプログラムのインスタンスハンドル
-		LoadIcon(NULL,IDI_APPLICATION),// アイコン画像
-		LoadCursor(NULL,IDC_ARROW),    // カーソル画像
-		NULL,                          // 背景色
-		NULL,                          // メニュー名
+		LoadIcon(nullptr,IDI_APPLICATION),// アイコン画像
+		LoadCursor(nullptr,IDC_ARROW),    // カーソル画像
+		nullptr,                          // 背景色
+		nullptr,                          // メニュー名
+		// TEXT() char* => wchar_t* に変換してくれる
 		TEXT("CreateWindow"),                // クラス名
 	};
 
@@ -137,8 +141,6 @@ int APIENTRY WinMain(
 		// WM_CREATEメッセージでlparamに渡したい値
 		NULL);
 
-	
-
 	if (window_handle == NULL)
 	{
 		return 0;
@@ -149,14 +151,22 @@ int APIENTRY WinMain(
 	RECT client_rect;
 
 	// ウィンドウサイズ取得
-	GetWindowRect(window_handle, &window_rect);
+	if (GetWindowRect(window_handle, &window_rect) == false)
+	{
+		// 失敗
+		return 0;
+	}
 	
 	// クライアント領域のサイズ取得
-	GetClientRect(window_handle, &client_rect);
+	if (GetClientRect(window_handle, &client_rect) == false)
+	{
+		// 失敗
+		return 0;
+	}
 
 	// フレームサイズ算出
 	int frame_size_x = (window_rect.right - window_rect.left) - (client_rect.right - client_rect.left);
-	int frame_size_y = (window_rect.bottom - window_rect.top) - (client_rect.bottom);
+	int frame_size_y = (window_rect.bottom - window_rect.top) - (client_rect.bottom - client_rect.top);
 
 	// リサイズ用サイズの算出
 	int resize_width   = frame_size_x + width;
@@ -182,6 +192,25 @@ int APIENTRY WinMain(
 	{
 		return 0;
 	}
+
+	if (InitDirectInput() == false)
+	{
+		return 0;
+	}
+
+	if (LoadTexture(TextureID::TexID1) == false)
+	{
+		return 0;
+	}
+
+	//	LoadXFile(TEXT("res/Sample01.x"));
+	LoadXFile(TEXT("Witchwait.X"));
+
+	float PosX = 0.0f;
+	float PosY = 0.0f;
+	float PosZ = 0.0f;
+
+	float Angle = 0.0f;
 
 	while (true)
 	{
@@ -251,29 +280,65 @@ int APIENTRY WinMain(
 				// ウィンドウズプロシージャー
 				DispatchMessage(&message);
 			};
-			
 		}
 		else
 		{
-			// ゲームに関連する処理
-				// ゲーム処理と画面処理を実行する
+			UpdateDirectInput();
+
+			if (IsKeyHeld(DIK_LEFTARROW))
+			{
+				Angle -= 1.0f;
+			}
+			else if (IsKeyHeld(DIK_RIGHTARROW))
+			{
+				Angle += 1.0f;
+			}
+
+			if (IsKeyHeld(DIK_UPARROW))
+			{
+				float VecZ = cosf(D3DXToRadian(Angle));
+				float VecX = sinf(D3DXToRadian(Angle));
+				float Speed = 1.0f;
+
+				PosX += VecX * Speed;
+				PosZ += VecZ * Speed;
+			}
+			else if (IsKeyHeld(DIK_DOWNARROW))
+			{
+				float VecZ = cosf(D3DXToRadian(Angle));
+				float VecX = sinf(D3DXToRadian(Angle));
+				float Speed = 1.0f;
+
+				PosX -= VecX * Speed;
+				PosZ -= VecZ * Speed;
+			}
+
+			UpdateTPSCamera(PosX, PosY, PosZ, Angle);
 
 			StartDrawing();
 
-//			DrawPorigon();
+			SetUpProjection();
 
-			DrawPorigonWithTriangleLise();
+			// ゲームに関連する処理
+			// ゲーム処理と画面処理を実行する
 
-			DrawPorigonWithTriangleStrip();
+			Draw3DPorigon();
 
-			DrawPorigonWithTriangleFan();
+			//DrawPorigon();
+			//DrawPorigonWithTriangleList();
+			//DrawPorigonWithTriangleStrip();
+			//DrawPorigonWithTriangleFan();
+
+			DrawXFile(PosX, PosY, PosZ, Angle);
 
 			FinishDrawing();
 		}
 	}
 
 	// 解放
+	ReleaseTexture();
 	ReleaseDirectGraphics();
+	ReleaseDirectInput();
 
 	return 0;
 }
