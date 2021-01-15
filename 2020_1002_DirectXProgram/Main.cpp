@@ -313,7 +313,7 @@ int APIENTRY WinMain(
 				PosZ -= VecZ * Speed;
 			}
 
-			UpdateTPSCamera(PosX, PosY, PosZ, Angle);
+			UpdateTPSCamera(0, 0, 0, Angle);
 
 			StartDrawing();
 
@@ -329,7 +329,7 @@ int APIENTRY WinMain(
 			//DrawPorigonWithTriangleStrip();
 			//DrawPorigonWithTriangleFan();
 
-			DrawXFile(PosX, PosY, PosZ, Angle);
+			DrawXFile(PosX, PosY, PosZ, 0);
 
 			FinishDrawing();
 		}
